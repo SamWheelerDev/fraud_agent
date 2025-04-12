@@ -3,25 +3,25 @@ version: '3'
 services:
   transaction-lookup:
     build:
-      context: ./transaction-lookup
+      context: ./tran_lookup
     ports:
       - "5001:5000"
     volumes:
-      - ./transaction-lookup:/app
+      - ./tran_lookup:/app
     environment:
-      - FLASK_APP=app.py
+      - FLASK_APP=main.py
       - FLASK_ENV=development
     restart: always
 
   dispute-submission:
     build:
-      context: ./dispute-submission
+      context: ./tran_submission
     ports:
       - "5002:5000"
     volumes:
-      - ./dispute-submission:/app
+      - ./tran_submission:/app
     environment:
-      - FLASK_APP=app.py
+      - FLASK_APP=main.py
       - FLASK_ENV=development
     restart: always
 

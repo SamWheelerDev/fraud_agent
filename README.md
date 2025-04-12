@@ -12,18 +12,24 @@ Both websites are built with Flask and can be run in Docker containers for easy 
 ```
 .
 ├── docker-compose.yml
-├── transaction-lookup/
+├── main.py
+├── pyproject.toml
+├── README.md
+├── uv.lock
+├── tran_lookup/
 │   ├── Dockerfile
-│   ├── app.py
-│   ├── requirements.txt
+│   ├── main.py
+│   ├── pyproject.toml
+│   ├── README.md
 │   └── templates/
 │       ├── login.html
 │       ├── search.html
 │       └── transaction_detail.html
-└── dispute-submission/
+└── tran_submission/
     ├── Dockerfile
-    ├── app.py
-    ├── requirements.txt
+    ├── main.py
+    ├── pyproject.toml
+    ├── README.md
     └── templates/
         ├── login.html
         ├── dispute_form.html
