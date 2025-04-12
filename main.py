@@ -9,11 +9,13 @@ from mcp_agent.config import (
     MCPSettings,
     MCPServerSettings,
     OpenAISettings,
+    AnthropicSettings,
 )
 from mcp_agent.agents.agent import Agent
 from mcp_agent.workflows.llm.augmented_llm import RequestParams
 from mcp_agent.workflows.llm.llm_selector import ModelPreferences
 from mcp_agent.workflows.llm.augmented_llm_openai import OpenAIAugmentedLLM
+from mcp_agent.workflows.llm.augmented_llm_anthropic import AnthropicAugmentedLLM
 
 
 # Create the MCP app
