@@ -66,7 +66,7 @@ cd credit-card-dispute-poc
 
 2. Start the containers with Docker Compose
 ```
-docker-compose up
+docker compose up
 ```
 
 3. Access the websites in your browser:

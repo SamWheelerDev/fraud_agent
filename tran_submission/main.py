@@ -48,9 +48,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Initialize database at startup
-@app.before_first_request
-def before_first_request():
+# Initialize database at startup - modern approach using Flask 2.0+ with_app_context
+with app.app_context():
     init_db()
 
 # Routes
