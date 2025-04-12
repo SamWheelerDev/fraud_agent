@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Lookup - Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+        .user-controls span {
+            margin-right: 1rem;
+            color: #555;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #4a90e2;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn:hover {
+            background-color: #3a7bc8;
+        }
+        .btn.logout {
+            background-color: #6c757d;
+        }
+        .btn.logout:hover {
+            background-color: #5a6268;
+        }
+        .search-container {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .results-container {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .results-table th, 
+        .results-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .results-table th {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        .results-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .transaction-link {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        .transaction-link:hover {
+            text-decoration: underline;
+        }
+        .no-results {
+            padding: 2rem;
+            text-align: center;
+            color: #6c757d;
+        }
+        .flash-messages {
+            margin-bottom: 1rem;
+        }
+        .flash-message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .flash-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Transaction Lookup System</h1>
+            <div class="user-controls">
+                <span>Logged in as: {{ session.username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn logout">Logout</a>
+            </div>
+        </div>
+        
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search by transaction ID, card number, or merchant name...">
+                <button id="search-button" class="btn">Search</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>Searching transactions...</p>
+        </div>
+        
+        <div class="results-container">
+            <table class="results-table" id="results-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Card Number</th>
+                        <th>Amount</th>
+                        <th>Merchant</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <!-- Results will be populated here -->
+                </tbody>
+            </table>
+            <div class="no-results" id="no-results">
+                <p>Enter a search term to find transactions.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            const resultsTable = document.getElementById('results-table');
+            const resultsBody = document.getElementById('results-body');
+            const noResults = document.getElementById('no-results');
+            const loading = document.getElementById('loading');
+            
+            // Function to perform search
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                
+                if (searchTerm === '') {
+                    resultsTable.style.display = 'none';
+                    noResults.style.display = 'block';
+                    noResults.innerHTML = '<p>Please enter a search term.</p>';
+                    return;
+                }
+                
+                // Show loading
+                loading.style.display = 'block';
+                resultsTable.style.display = 'none';
+                noResults.style.display = 'none';
+                
+                // Perform API call
+                fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        search_term: searchTerm
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading
+                    loading.style.display = 'none';
+                    
+                    if (data.transactions && data.transactions.length > 0) {
+                        // Clear previous results
+                        resultsBody.innerHTML = '';
+                        
+                        // Add new results
+                        data.transactions.forEach(transaction => {
+                            const row = document.createElement('tr');
+                            
+                            row.innerHTML = `
+                                <td>${transaction.transaction_id}</td>
+                                <td>${transaction.card_number}</td>
+                                <td>$${transaction.amount.toFixed(2)}</td>
+                                <td>${transaction.merchant_name}</td>
+                                <td>${transaction.transaction_date}</td>
+                                <td>${transaction.status}</td>
+                                <td>
+                                    <a href="/transaction/${transaction.transaction_id}" class="transaction-link">
+                                        View Details
+                                    </a>
+                                </td>
+                            `;
+                            
+                            resultsBody.appendChild(row);
+                        });
+                        
+                        // Show results table
+                        resultsTable.style.display = 'table';
+                        noResults.style.display = 'none';
+                    } else {
+                        // No results found
+                        resultsTable.style.display = 'none';
+                        noResults.style.display = 'block';
+                        noResults.innerHTML = '<p>No transactions found matching your search.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    resultsTable.style.display = 'none';
+                    noResults.style.display = 'block';
+                    noResults.innerHTML = '<p>An error occurred while searching. Please try again.</p>';
+                });
+            }
+            
+            // Event listeners
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Submission Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+        .user-controls span {
+            margin-right: 1rem;
+            color: #555;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #e64a19;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn:hover {
+            background-color: #d84315;
+        }
+        .btn.logout {
+            background-color: #6c757d;
+        }
+        .btn.logout:hover {
+            background-color: #5a6268;
+        }
+        .btn.view-disputes {
+            background-color: #4a90e2;
+            margin-right: 0.5rem;
+        }
+        .btn.view-disputes:hover {
+            background-color: #3a7bc8;
+        }
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        .form-section h2 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+        .form-group {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group.full-width {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #495057;
+            font-weight: bold;
+        }
+        .form-group label .required {
+            color: #dc3545;
+            margin-left: 3px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .form-actions {
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .form-actions .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        .flash-messages {
+            margin-bottom: 1rem;
+        }
+        .flash-message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .flash-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .helper-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .form-group {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dispute Submission System</h1>
+            <div class="user-controls">
+                <span>Logged in as: {{ session.username }}</span>
+                <a href="{{ url_for('view_disputes') }}" class="btn view-disputes">View Disputes</a>
+                <a href="{{ url_for('logout') }}" class="btn logout">Logout</a>
+            </div>
+        </div>
+        
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('submit_dispute') }}">
+                <div class="form-section">
+                    <h2>Transaction Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transaction_id">Transaction ID <span class="required">*</span></label>
+                            <input type="text" id="transaction_id" name="transaction_id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="transaction_date">Transaction Date <span class="required">*</span></label>
+                            <input type="date" id="transaction_date" name="transaction_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount ($) <span class="required">*</span></label>
+                            <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="merchant_name">Merchant Name <span class="required">*</span></label>
+                            <input type="text" id="merchant_name" name="merchant_name" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2>Card Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card_number">Card Number <span class="required">*</span></label>
+                            <input type="text" id="card_number" name="card_number" required>
+                            <div class="helper-text">Format: XXXX-XXXX-XXXX-XXXX</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardholder_name">Cardholder Name <span class="required">*</span></label>
+                            <input type="text" id="cardholder_name" name="cardholder_name" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2>Dispute Details</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dispute_reason">Dispute Reason <span class="required">*</span></label>
+                            <select id="dispute_reason" name="dispute_reason" required>
+                                <option value="">Select a reason...</option>
+                                <option value="Unauthorized Transaction">Unauthorized Transaction</option>
+                                <option value="Duplicate Transaction">Duplicate Transaction</option>
+                                <option value="Merchandise Not Received">Merchandise Not Received</option>
+                                <option value="Merchandise Returned">Merchandise Returned</option>
+                                <option value="Merchandise Damaged or Defective">Merchandise Damaged or Defective</option>
+                                <option value="Services Not Rendered">Services Not Rendered</option>
+                                <option value="Incorrect Amount">Incorrect Amount</option>
+                                <option value="Other">Other (Please Specify)</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="additional_details">Additional Details</label>
+                            <textarea id="additional_details" name="additional_details"></textarea>
+                            <div class="helper-text">Please provide any additional information that may help in processing this dispute.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn">Submit Dispute</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

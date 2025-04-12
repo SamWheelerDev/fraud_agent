@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  transaction-lookup:
+    build:
+      context: ./transaction-lookup
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./transaction-lookup:/app
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    restart: always
+
+  dispute-submission:
+    build:
+      context: ./dispute-submission
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./dispute-submission:/app
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    restart: always
+
+networks:
+  default:
+    name: card-dispute-network

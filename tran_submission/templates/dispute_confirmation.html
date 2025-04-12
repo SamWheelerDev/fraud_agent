@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispute Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+        .user-controls span {
+            margin-right: 1rem;
+            color: #555;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #e64a19;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn:hover {
+            background-color: #d84315;
+        }
+        .btn.logout {
+            background-color: #6c757d;
+        }
+        .btn.logout:hover {
+            background-color: #5a6268;
+        }
+        .btn.back {
+            background-color: #6c757d;
+            margin-right: 0.5rem;
+        }
+        .btn.back:hover {
+            background-color: #5a6268;
+        }
+        .confirmation-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .confirmation-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .confirmation-header h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .confirmation-header p {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+        .detail-section h3 {
+            color: #495057;
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        .detail-item {
+            margin-bottom: 1rem;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .detail-value {
+            color: #212529;
+        }
+        .actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .flash-messages {
+            margin-bottom: 1rem;
+        }
+        .flash-message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .flash-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dispute Confirmation</h1>
+            <div class="user-controls">
+                <span>Logged in as: {{ session.username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn logout">Logout</a>
+            </div>
+        </div>
+        
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <div class="confirmation-container">
+            <div class="confirmation-header">
+                <div class="success-icon">✓</div>
+                <h2>Dispute Submitted Successfully</h2>
+                <p>Your dispute has been received and is being processed.</p>
+                <p>Dispute Reference ID: <strong>{{ dispute.id }}</strong></p>
+                <p>Status: <span class="status-badge status-pending">{{ dispute.status }}</span></p>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Transaction Information</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Transaction ID</span>
+                        <span class="detail-value">{{ dispute.transaction_id }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Transaction Date</span>
+                        <span class="detail-value">{{ dispute.transaction_date }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Amount</span>
+                        <span class="detail-value">${{ "%.2f"|format(dispute.amount) }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Merchant Name</span>
+                        <span class="detail-value">{{ dispute.merchant_name }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Card Information</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Card Number</span>
+                        <span class="detail-value">{{ dispute.card_number }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Cardholder Name</span>
+                        <span class="detail-value">{{ dispute.cardholder_name }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Dispute Details</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Dispute Reason</span>
+                        <span class="detail-value">{{ dispute.dispute_reason }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Submission Date</span>
+                        <span class="detail-value">{{ dispute.submission_date }}</span>
+                    </div>
+                    {% if dispute.additional_details %}
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <span class="detail-label">Additional Details</span>
+                        <span class="detail-value">{{ dispute.additional_details }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="actions">
+                <a href="{{ url_for('dispute_form') }}" class="btn back">Submit Another Dispute</a>
+                <a href="{{ url_for('view_disputes') }}" class="btn" style="margin-left: 10px;">View All Disputes</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
